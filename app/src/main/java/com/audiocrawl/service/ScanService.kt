@@ -6,9 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.app.Service
+import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.lifecycleScope
 import com.audiocrawl.AudioCrawlApp
 import com.audiocrawl.MainActivity
 import com.audiocrawl.R
@@ -20,6 +20,10 @@ import com.audiocrawl.scanner.MediaStoreScanner
 import com.audiocrawl.scanner.ScanResultItem
 import com.audiocrawl.util.StorageUtils
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +31,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ScanService : LifecycleService() {
+class ScanService : Service() {
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
+    }
 
     companion object {
         const val NOTIFICATION_ID = 1001
@@ -115,7 +128,7 @@ class ScanService : LifecycleService() {
     }
 
     private fun performScan() {
-        lifecycleScope.launch {
+        serviceScope.launch {
             val startTime = System.currentTimeMillis()
             val foundFiles = mutableListOf<AudioFile>()
             val foundPaths = mutableSetOf<String>()

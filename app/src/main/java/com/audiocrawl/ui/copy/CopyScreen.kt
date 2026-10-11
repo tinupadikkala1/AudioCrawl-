@@ -1,22 +1,35 @@
 package com.audiocrawl.ui.copy
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,14 +39,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.audiocrawl.model.CopyState
 import com.audiocrawl.ui.components.AudioCrawlTopAppBar
+import com.audiocrawl.ui.theme.AtmosphereBlue
+import com.audiocrawl.ui.theme.EngineEmerald
+import com.audiocrawl.ui.theme.FilterRed
+import com.audiocrawl.ui.theme.ObsidianContainer
+import com.audiocrawl.ui.theme.ObsidianContainerLow
+import com.audiocrawl.ui.theme.ObsidianDelimiter
+import com.audiocrawl.ui.theme.ObsidianSurface
+import com.audiocrawl.ui.theme.ObsidianVoid
+import com.audiocrawl.ui.theme.SpectralCyan
+import com.audiocrawl.ui.theme.TextMuted
+import com.audiocrawl.ui.theme.TextPhosphor
 
 @Composable
 fun CopyScreen(
@@ -43,9 +70,11 @@ fun CopyScreen(
     val copyState by viewModel.copyState.collectAsStateWithLifecycle()
 
     Scaffold(
+        containerColor = ObsidianVoid,
         topBar = {
             AudioCrawlTopAppBar(
-                title = "Copying Songs"
+                title = "VAULT COMMIT",
+                subtitle = "SCOPED_TRANSFER // ACTIVE"
             )
         }
     ) { paddingValues ->
@@ -53,60 +82,175 @@ fun CopyScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(24.dp),
+                .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             when (val state = copyState) {
                 is CopyState.Copying -> {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = "Copying Songs…",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        val progressFraction = if (state.total > 0) state.current.toFloat() / state.total.toFloat() else 0f
-                        LinearProgressIndicator(
-                            progress = { progressFraction },
+                        // Central Radial Transfer Meter
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(10.dp),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "${state.current} of ${state.total} songs (${state.progressPercentage}%)",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, ObsidianDelimiter, RoundedCornerShape(12.dp))
+                                .background(ObsidianContainerLow)
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                val progressFraction = if (state.total > 0) state.current.toFloat() / state.total.toFloat() else 0f
+
+                                Box(
+                                    modifier = Modifier.size(130.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        progress = { progressFraction },
+                                        modifier = Modifier.fillMaxSize(),
+                                        strokeWidth = 4.dp,
+                                        color = SpectralCyan,
+                                        trackColor = ObsidianDelimiter
+                                    )
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "${state.progressPercentage}%",
+                                            style = MaterialTheme.typography.displayLarge.copy(fontSize = 28.sp),
+                                            color = TextPhosphor,
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "${state.current} / ${state.total}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = SpectralCyan,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
                                 Text(
-                                    text = "Current file:",
+                                    text = "COMMITTING TRACKS TO VAULT",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = TextPhosphor,
+                                    fontWeight = FontWeight.Bold
                                 )
+
                                 Spacer(modifier = Modifier.height(4.dp))
+
                                 Text(
-                                    text = state.currentFileName.ifBlank { "Processing…" },
+                                    text = "Writing via Scoped Storage MediaStore API",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    maxLines = 2,
+                                    color = TextMuted
+                                )
+                            }
+                        }
+
+                        // Current File In-Flight Card
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
+                                .background(ObsidianContainerLow)
+                                .padding(14.dp)
+                        ) {
+                            Column {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "STREAM IN-FLIGHT",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                        color = TextMuted
+                                    )
+                                    Text(
+                                        text = "I/O SYNC",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                        color = EngineEmerald
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = state.currentFileName.ifBlank { "Initializing writer…" },
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextPhosphor,
+                                    fontFamily = FontFamily.Monospace,
+                                    maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                val progressFraction = if (state.total > 0) state.current.toFloat() / state.total.toFloat() else 0f
+                                LinearProgressIndicator(
+                                    progress = { progressFraction },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(2.dp),
+                                    color = SpectralCyan,
+                                    trackColor = ObsidianVoid
+                                )
+                            }
+                        }
+
+                        // Storage I/O Telemetry Status Matrix
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
+                                    .background(ObsidianContainerLow)
+                                    .padding(10.dp)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "ID3v2 TAGS",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                        color = TextMuted
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "PRESERVED",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = EngineEmerald,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
+                                    .background(ObsidianContainerLow)
+                                    .padding(10.dp)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "MEDIA SCANNER",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                        color = TextMuted
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "AUTO-INDEX",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = SpectralCyan,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
                     }
@@ -116,60 +260,65 @@ fun CopyScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(1.dp, EngineEmerald.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                            .background(ObsidianContainerLow)
+                            .padding(28.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
-                            modifier = Modifier.size(80.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            modifier = Modifier.size(64.dp),
+                            tint = EngineEmerald
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "All Done!",
+                            text = "COMMITTED TO VAULT",
                             style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = TextPhosphor
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Successfully copied ${state.copiedCount} songs to:",
+                            text = "Successfully copied ${state.copiedCount} tracks with 0 errors.",
                             style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = TextMuted
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Card(
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .border(1.dp, ObsidianDelimiter, RoundedCornerShape(6.dp))
+                                .background(ObsidianVoid)
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Text(
                                 text = state.targetPath,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                style = MaterialTheme.typography.labelSmall,
+                                color = SpectralCyan,
+                                fontFamily = FontFamily.Monospace
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "The songs are now indexed and available in your favorite music player without recordings or voice notes!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         Button(
                             onClick = onNavigateHome,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(12.dp)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = SpectralCyan)
                         ) {
-                            Icon(imageVector = Icons.Default.Folder, contentDescription = null)
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Text("Done / Back to Home")
+                            Text(
+                                text = "RETURN TO HOME",
+                                fontWeight = FontWeight.Bold,
+                                color = ObsidianVoid,
+                                style = MaterialTheme.typography.labelSmall
+                            )
                         }
                     }
                 }
@@ -177,36 +326,47 @@ fun CopyScreen(
                 is CopyState.Error -> {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(1.dp, FilterRed.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                            .background(ObsidianContainerLow)
+                            .padding(28.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.ErrorOutline,
                             contentDescription = null,
-                            modifier = Modifier.size(72.dp),
-                            tint = MaterialTheme.colorScheme.error
+                            modifier = Modifier.size(64.dp),
+                            tint = FilterRed
                         )
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Copy Failed",
+                            text = "TRANSFER ERROR",
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.error,
+                            color = FilterRed,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = state.message,
                             style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = TextMuted
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        Button(onClick = onNavigateHome) {
-                            Text("Return to Home")
+                        Button(
+                            onClick = onNavigateHome,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("RETURN TO HOME")
                         }
                     }
                 }
 
                 is CopyState.Idle -> {
-                    Text("Ready")
+                    CircularProgressIndicator(color = SpectralCyan)
                 }
             }
         }

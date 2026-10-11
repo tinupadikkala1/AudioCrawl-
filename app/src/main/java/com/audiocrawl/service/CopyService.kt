@@ -15,15 +15,20 @@ import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.lifecycleScope
+import android.app.Service
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.audiocrawl.AudioCrawlApp
 import com.audiocrawl.MainActivity
 import com.audiocrawl.R
 import com.audiocrawl.model.AudioFile
 import com.audiocrawl.model.CopyState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,7 +40,16 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 @AndroidEntryPoint
-class CopyService : LifecycleService() {
+class CopyService : Service() {
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
+    }
 
     companion object {
         const val NOTIFICATION_ID = 1002
@@ -114,7 +128,7 @@ class CopyService : LifecycleService() {
     }
 
     private fun performCopy(files: List<AudioFile>, targetFolderName: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
+        serviceScope.launch(Dispatchers.IO) {
             val total = files.size
             var copiedCount = 0
 

@@ -1,10 +1,13 @@
 package com.audiocrawl.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.util.Locale
 
 /**
  * Represents an audio file detected on the device storage.
  */
+@Parcelize
 data class AudioFile(
     val id: Long = 0,
     val title: String,
@@ -18,7 +21,7 @@ data class AudioFile(
     val parentFolder: String = "",
     val isFromSdCard: Boolean = false,
     val isSelected: Boolean = true
-) {
+) : Parcelable {
     /**
      * Formats duration in mm:ss or hh:mm:ss format.
      */

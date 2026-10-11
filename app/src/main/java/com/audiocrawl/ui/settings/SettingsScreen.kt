@@ -1,6 +1,9 @@
 package com.audiocrawl.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,15 +22,16 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOff
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -38,11 +42,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.audiocrawl.ui.components.AudioCrawlTopAppBar
+import com.audiocrawl.ui.theme.AtmosphereBlue
+import com.audiocrawl.ui.theme.EngineEmerald
+import com.audiocrawl.ui.theme.FilterRed
+import com.audiocrawl.ui.theme.ObsidianContainer
+import com.audiocrawl.ui.theme.ObsidianContainerLow
+import com.audiocrawl.ui.theme.ObsidianDelimiter
+import com.audiocrawl.ui.theme.ObsidianSurface
+import com.audiocrawl.ui.theme.ObsidianVoid
+import com.audiocrawl.ui.theme.SpectralCyan
+import com.audiocrawl.ui.theme.TextMuted
+import com.audiocrawl.ui.theme.TextPhosphor
 
 @Composable
 fun SettingsScreen(
@@ -55,21 +73,31 @@ fun SettingsScreen(
 
     if (showAddDialog) {
         AlertDialog(
+            containerColor = ObsidianContainer,
+            titleContentColor = TextPhosphor,
+            textContentColor = TextMuted,
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Add Excluded Folder") },
+            title = { Text("Add Excluded Directory") },
             text = {
                 Column {
                     Text(
-                        text = "Enter a folder name or partial path to exclude from music scanning (e.g. MyVoiceMemos):",
+                        text = "Enter a directory name or path segment to blacklist from scans (e.g. MyVoiceNotes, CallRecordings):",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = newFolderText,
                         onValueChange = { newFolderText = it },
-                        label = { Text("Folder Name / Path") },
+                        label = { Text("Folder Name / Path Fragment") },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPhosphor),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = SpectralCyan,
+                            unfocusedBorderColor = ObsidianDelimiter,
+                            focusedContainerColor = ObsidianVoid,
+                            unfocusedContainerColor = ObsidianVoid
+                        )
                     )
                 }
             },
@@ -81,27 +109,30 @@ fun SettingsScreen(
                             newFolderText = ""
                             showAddDialog = false
                         }
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SpectralCyan)
                 ) {
-                    Text("Add")
+                    Text("ADD RULE", color = ObsidianVoid, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text("Cancel")
+                    Text("CANCEL", color = TextMuted)
                 }
             }
         )
     }
 
     Scaffold(
+        containerColor = ObsidianVoid,
         topBar = {
             AudioCrawlTopAppBar(
-                title = "Filter & Exclusion Rules",
+                title = "FILTER CONFIG",
+                subtitle = "7-LAYER HEURISTICS",
                 onBackClick = onNavigateBack,
                 actions = {
                     IconButton(onClick = { showAddDialog = true }) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Add Folder")
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Add Folder", tint = SpectralCyan)
                     }
                 }
             )
@@ -112,45 +143,49 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                // Info card on Smart OEM & App Pattern Filtering
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                // Heuristic Info Telemetry Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
+                        .background(ObsidianContainerLow)
+                        .padding(14.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.Top
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Default.Security,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                            tint = SpectralCyan,
+                            modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Intelligent Auto-Filtering",
+                                text = "7-Layer Automated Filter Engine",
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                color = TextPhosphor
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "In addition to folder rules, AudioCrawl automatically detects & filters out 25+ OEM and messaging recording naming patterns (Samsung Voice 001, MIUI sound_recorder, OnePlus Record_*, WhatsApp PTT-*, Telegram audio_*, etc.).",
+                                text = "Intelligently classifies tracks using MediaStore SQL flags, music-only extension whitelisting, speech codec locks (AMR/AWB), 40+ directory paths, and 25+ OEM manufacturer regexes.",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = TextMuted
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -158,36 +193,40 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Excluded Folders (${scanConfig.excludedFolders.size})",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        text = "EXCLUDED DIRECTORIES (${scanConfig.excludedFolders.size})",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMuted
                     )
                     OutlinedButton(
                         onClick = { viewModel.resetToDefaults() },
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(6.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPhosphor)
                     ) {
                         Icon(
                             imageVector = Icons.Default.RestartAlt,
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp),
+                            tint = SpectralCyan
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Reset Defaults")
+                        Text("RESET RULES", style = MaterialTheme.typography.labelSmall)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
             }
 
             items(scanConfig.excludedFolders.toList().sorted()) { folder ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(6.dp))
+                        .background(ObsidianContainerLow)
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -198,22 +237,28 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Default.FolderOff,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(20.dp)
+                                tint = FilterRed,
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = folder,
                                 style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Medium,
+                                color = TextPhosphor,
+                                fontFamily = FontFamily.Monospace
                             )
                         }
 
-                        IconButton(onClick = { viewModel.removeExcludedFolder(folder) }) {
+                        IconButton(
+                            onClick = { viewModel.removeExcludedFolder(folder) },
+                            modifier = Modifier.size(32.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Remove",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = TextMuted,
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
@@ -221,7 +266,7 @@ fun SettingsScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
