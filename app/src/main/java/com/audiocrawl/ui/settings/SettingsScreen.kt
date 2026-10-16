@@ -1,7 +1,6 @@
 package com.audiocrawl.ui.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +23,8 @@ import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,18 +42,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.audiocrawl.ui.components.AudioCrawlTopAppBar
+import com.audiocrawl.ui.theme.AccentWarm
+import com.audiocrawl.ui.theme.CardSurface
+import com.audiocrawl.ui.theme.CardSurfaceElevated
+import com.audiocrawl.ui.theme.DividerSubtle
 import com.audiocrawl.ui.theme.FilterRed
-import com.audiocrawl.ui.theme.ObsidianContainer
-import com.audiocrawl.ui.theme.ObsidianContainerLow
-import com.audiocrawl.ui.theme.ObsidianDelimiter
-import com.audiocrawl.ui.theme.ObsidianVoid
-import com.audiocrawl.ui.theme.SpectralCyan
+import com.audiocrawl.ui.theme.ScreenBackground
 import com.audiocrawl.ui.theme.TextMuted
 import com.audiocrawl.ui.theme.TextPhosphor
 
@@ -67,30 +70,32 @@ fun SettingsScreen(
 
     if (showAddDialog) {
         AlertDialog(
-            containerColor = ObsidianContainer,
+            containerColor = CardSurfaceElevated,
             titleContentColor = TextPhosphor,
             textContentColor = TextMuted,
+            shape = RoundedCornerShape(20.dp),
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Add Excluded Directory") },
+            title = { Text("Add Excluded Directory", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     Text(
-                        text = "Enter a directory name or path segment to blacklist from scans (e.g. MyVoiceNotes, CallRecordings):",
+                        text = "Enter a directory name or path keyword to ignore during music scans (e.g. MyVoiceNotes, AudioRecordings):",
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                     OutlinedTextField(
                         value = newFolderText,
                         onValueChange = { newFolderText = it },
-                        label = { Text("Folder Name / Path Fragment") },
+                        placeholder = { Text("Folder name or keyword") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
                         textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPhosphor),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = SpectralCyan,
-                            unfocusedBorderColor = ObsidianDelimiter,
-                            focusedContainerColor = ObsidianVoid,
-                            unfocusedContainerColor = ObsidianVoid
+                            focusedBorderColor = AccentWarm,
+                            unfocusedBorderColor = DividerSubtle,
+                            focusedContainerColor = ScreenBackground,
+                            unfocusedContainerColor = ScreenBackground
                         )
                     )
                 }
@@ -104,29 +109,34 @@ fun SettingsScreen(
                             showAddDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = SpectralCyan)
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentWarm)
                 ) {
-                    Text("ADD RULE", color = ObsidianVoid, fontWeight = FontWeight.Bold)
+                    Text("Add Folder", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text("CANCEL", color = TextMuted)
+                    Text("Cancel", color = TextMuted)
                 }
             }
         )
     }
 
     Scaffold(
-        containerColor = ObsidianVoid,
+        containerColor = ScreenBackground,
         topBar = {
             AudioCrawlTopAppBar(
-                title = "FILTER CONFIG",
-                subtitle = "EXCLUSION RULES",
+                title = "Filter Settings",
+                subtitle = "Excluded folders & directories",
                 onBackClick = onNavigateBack,
                 actions = {
                     IconButton(onClick = { showAddDialog = true }) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Add Folder", tint = SpectralCyan)
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add Folder",
+                            tint = AccentWarm
+                        )
                     }
                 }
             )
@@ -136,72 +146,90 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "EXCLUDED DIRECTORIES (${scanConfig.excludedFolders.size})",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = TextMuted
-                    )
+                    Column {
+                        Text(
+                            text = "Excluded Directories (${scanConfig.excludedFolders.size})",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPhosphor
+                        )
+                        Text(
+                            text = "Folders skipped during scans",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextMuted
+                        )
+                    }
+
                     OutlinedButton(
                         onClick = { viewModel.resetToDefaults() },
-                        shape = RoundedCornerShape(6.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPhosphor)
                     ) {
                         Icon(
                             imageVector = Icons.Default.RestartAlt,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = SpectralCyan
+                            tint = AccentWarm
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("RESET RULES", style = MaterialTheme.typography.labelSmall)
+                        Text("Reset", style = MaterialTheme.typography.labelSmall)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             items(scanConfig.excludedFolders.toList().sorted()) { folder ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(6.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(6.dp))
-                        .background(ObsidianContainerLow)
-                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardSurface),
+                    border = CardDefaults.outlinedCardBorder().copy(
+                        brush = Brush.linearGradient(listOf(DividerSubtle, DividerSubtle))
+                    )
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.FolderOff,
-                                contentDescription = null,
-                                tint = FilterRed,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(CardSurfaceElevated),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FolderOff,
+                                    contentDescription = null,
+                                    tint = TextMuted,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = folder,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
-                                color = TextPhosphor,
-                                fontFamily = FontFamily.Monospace
+                                color = TextPhosphor
                             )
                         }
 
@@ -211,9 +239,9 @@ fun SettingsScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Remove",
-                                tint = TextMuted,
-                                modifier = Modifier.size(16.dp)
+                                contentDescription = "Remove rule",
+                                tint = FilterRed.copy(alpha = 0.8f),
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }

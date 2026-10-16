@@ -1,8 +1,8 @@
 package com.audiocrawl.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -23,14 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.audiocrawl.ui.theme.EngineEmerald
-import com.audiocrawl.ui.theme.ObsidianDelimiter
-import com.audiocrawl.ui.theme.ObsidianSurface
-import com.audiocrawl.ui.theme.SpectralCyan
+import com.audiocrawl.ui.theme.BackgroundDark
+import com.audiocrawl.ui.theme.EmeraldSuccess
 import com.audiocrawl.ui.theme.TextMuted
-import com.audiocrawl.ui.theme.TextPhosphor
+import com.audiocrawl.ui.theme.TextPrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,27 +40,19 @@ fun AudioCrawlTopAppBar(
 ) {
     TopAppBar(
         title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Column {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
-                    color = TextPhosphor
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary
                 )
                 if (subtitle != null) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .border(1.dp, ObsidianDelimiter, RoundedCornerShape(4.dp))
-                            .background(ObsidianSurface)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = SpectralCyan
-                        )
-                    }
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMuted
+                    )
                 }
             }
         },
@@ -72,15 +62,15 @@ fun AudioCrawlTopAppBar(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextPhosphor
+                        tint = TextPrimary
                     )
                 }
             }
         },
         actions = { actions() },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = ObsidianSurface,
-            titleContentColor = TextPhosphor
+            containerColor = BackgroundDark,
+            titleContentColor = TextPrimary
         )
     )
 }
@@ -89,23 +79,23 @@ fun AudioCrawlTopAppBar(
 fun SdCardBadge(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, EngineEmerald.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
-            .background(EngineEmerald.copy(alpha = 0.12f))
-            .padding(horizontal = 6.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(EmeraldSuccess.copy(alpha = 0.15f))
+            .padding(horizontal = 8.dp, vertical = 3.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.SdCard,
                 contentDescription = "SD Card",
                 modifier = Modifier.size(12.dp),
-                tint = EngineEmerald
+                tint = EmeraldSuccess
             )
-            Spacer(modifier = Modifier.width(3.dp))
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "SD CARD",
+                text = "SD Card",
                 style = MaterialTheme.typography.labelSmall,
-                color = EngineEmerald
+                fontWeight = FontWeight.Medium,
+                color = EmeraldSuccess
             )
         }
     }

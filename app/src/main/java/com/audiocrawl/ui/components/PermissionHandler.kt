@@ -112,40 +112,72 @@ fun PermissionRationaleCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            .padding(20.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = com.audiocrawl.ui.theme.CardSurface),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                listOf(com.audiocrawl.ui.theme.DividerSubtle, com.audiocrawl.ui.theme.DividerSubtle)
+            )
+        )
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = Icons.Default.FolderOpen,
                 contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary
+                modifier = Modifier.size(56.dp),
+                tint = com.audiocrawl.ui.theme.AccentWarm
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Storage Permission Required",
+                text = "Storage Access Required",
                 style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = com.audiocrawl.ui.theme.TextPhosphor,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "AudioCrawl needs permission to access your audio files so it can scan for genuine songs and filter out voice notes, call recordings, and app sound effects.",
+                text = "AudioCrawl needs permission to access your audio files so it can scan for songs and organize them into your Music folder.",
                 style = MaterialTheme.typography.bodyMedium,
+                color = com.audiocrawl.ui.theme.TextMuted,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(onClick = onRequestAgain, modifier = Modifier.fillMaxWidth()) {
-                Text("Grant Storage Access")
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = onRequestAgain,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = com.audiocrawl.ui.theme.AccentWarm,
+                    contentColor = androidx.compose.ui.graphics.Color.White
+                )
+            ) {
+                Text(
+                    text = "Grant Storage Access",
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = onOpenSettings, modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(10.dp))
+            androidx.compose.material3.OutlinedButton(
+                onClick = onOpenSettings,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                    contentColor = com.audiocrawl.ui.theme.TextPhosphor
+                )
+            ) {
                 Text("Open App Settings")
             }
         }
     }
 }
+

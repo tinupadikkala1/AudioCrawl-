@@ -4,15 +4,8 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,18 +17,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Storage
-import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -52,7 +49,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,15 +61,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.audiocrawl.model.CopyState
 import com.audiocrawl.model.DeleteState
 import com.audiocrawl.ui.components.AudioCrawlTopAppBar
-import com.audiocrawl.ui.theme.AtmosphereBlue
+import com.audiocrawl.ui.theme.AccentWarm
+import com.audiocrawl.ui.theme.CardSurface
+import com.audiocrawl.ui.theme.CardSurfaceElevated
+import com.audiocrawl.ui.theme.DividerSubtle
 import com.audiocrawl.ui.theme.EngineEmerald
 import com.audiocrawl.ui.theme.FilterRed
-import com.audiocrawl.ui.theme.ObsidianContainer
-import com.audiocrawl.ui.theme.ObsidianContainerLow
-import com.audiocrawl.ui.theme.ObsidianDelimiter
-import com.audiocrawl.ui.theme.ObsidianSurface
-import com.audiocrawl.ui.theme.ObsidianVoid
-import com.audiocrawl.ui.theme.SpectralCyan
+import com.audiocrawl.ui.theme.ScreenBackground
 import com.audiocrawl.ui.theme.TextMuted
 import com.audiocrawl.ui.theme.TextPhosphor
 
@@ -91,11 +87,11 @@ fun CopyScreen(
     }
 
     Scaffold(
-        containerColor = ObsidianVoid,
+        containerColor = ScreenBackground,
         topBar = {
             AudioCrawlTopAppBar(
-                title = "VAULT COMMIT",
-                subtitle = "SCOPED_TRANSFER // ACTIVE"
+                title = "Organizing Songs",
+                subtitle = "Copying files to music folder"
             )
         }
     ) { paddingValues ->
@@ -103,7 +99,7 @@ fun CopyScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(20.dp),
             contentAlignment = Alignment.Center
         ) {
             when (val state = copyState) {
@@ -113,17 +109,20 @@ fun CopyScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Central Radial Transfer Meter
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(1.dp, ObsidianDelimiter, RoundedCornerShape(12.dp))
-                                .background(ObsidianContainerLow)
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = CardSurface),
+                            border = CardDefaults.outlinedCardBorder().copy(
+                                brush = Brush.linearGradient(listOf(DividerSubtle, DividerSubtle))
+                            )
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(28.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 val progressFraction = if (state.total > 0) state.current.toFloat() / state.total.toFloat() else 0f
 
                                 Box(
@@ -133,143 +132,85 @@ fun CopyScreen(
                                     CircularProgressIndicator(
                                         progress = { progressFraction },
                                         modifier = Modifier.fillMaxSize(),
-                                        strokeWidth = 4.dp,
-                                        color = SpectralCyan,
-                                        trackColor = ObsidianDelimiter
+                                        strokeWidth = 6.dp,
+                                        color = AccentWarm,
+                                        trackColor = CardSurfaceElevated
                                     )
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(
                                             text = "${state.progressPercentage}%",
-                                            style = MaterialTheme.typography.displayLarge.copy(fontSize = 28.sp),
+                                            style = MaterialTheme.typography.headlineLarge,
                                             color = TextPhosphor,
-                                            fontFamily = FontFamily.Monospace,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Text(
-                                            text = "${state.current} / ${state.total}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = SpectralCyan,
-                                            fontFamily = FontFamily.Monospace
+                                            text = "${state.current} of ${state.total}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = TextMuted
                                         )
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(24.dp))
 
                                 Text(
-                                    text = "COMMITTING TRACKS TO VAULT",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = TextPhosphor,
-                                    fontWeight = FontWeight.Bold
+                                    text = "Copying Music Files…",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPhosphor
                                 )
 
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                Text(
-                                    text = "Writing via Scoped Storage MediaStore API",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = TextMuted
-                                )
-                            }
-                        }
-
-                        // Current File In-Flight Card
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                                .background(ObsidianContainerLow)
-                                .padding(14.dp)
-                        ) {
-                            Column {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "STREAM IN-FLIGHT",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                        color = TextMuted
-                                    )
-                                    Text(
-                                        text = "I/O SYNC",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                        color = EngineEmerald
-                                    )
-                                }
                                 Spacer(modifier = Modifier.height(6.dp))
+
                                 Text(
-                                    text = state.currentFileName.ifBlank { "Initializing writer…" },
+                                    text = "Preserving album tags, artists, and original quality",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = TextPhosphor,
-                                    fontFamily = FontFamily.Monospace,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                val progressFraction = if (state.total > 0) state.current.toFloat() / state.total.toFloat() else 0f
-                                LinearProgressIndicator(
-                                    progress = { progressFraction },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(2.dp),
-                                    color = SpectralCyan,
-                                    trackColor = ObsidianVoid
+                                    color = TextMuted,
+                                    textAlign = TextAlign.Center
                                 )
                             }
                         }
 
-                        // Storage I/O Telemetry Status Matrix
-                        Row(
+                        // Current File Card
+                        Card(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            shape = RoundedCornerShape(14.dp),
+                            colors = CardDefaults.cardColors(containerColor = CardSurfaceElevated)
                         ) {
-                            Box(
+                            Row(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                                    .background(ObsidianContainerLow)
-                                    .padding(10.dp)
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column {
-                                    Text(
-                                        text = "ID3v2 TAGS",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                        color = TextMuted
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = "PRESERVED",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = EngineEmerald,
-                                        fontWeight = FontWeight.Bold
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(AccentWarm.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.MusicNote,
+                                        contentDescription = null,
+                                        tint = AccentWarm,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                                    .background(ObsidianContainerLow)
-                                    .padding(10.dp)
-                            ) {
-                                Column {
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "MEDIA SCANNER",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                        text = "Current Song",
+                                        style = MaterialTheme.typography.labelSmall,
                                         color = TextMuted
                                     )
-                                    Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = "AUTO-INDEX",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = SpectralCyan,
-                                        fontWeight = FontWeight.Bold
+                                        text = state.currentFileName.ifEmpty { "Preparing transfer…" },
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = TextPhosphor,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -279,89 +220,121 @@ fun CopyScreen(
 
                 is CopyState.Complete -> {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, EngineEmerald.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                            .background(ObsidianContainerLow)
-                            .padding(28.dp)
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = EngineEmerald
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "COMMITTED TO VAULT",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPhosphor
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Successfully copied ${state.copiedCount} tracks with 0 errors.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = TextMuted
-                        )
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .border(1.dp, ObsidianDelimiter, RoundedCornerShape(6.dp))
-                                .background(ObsidianVoid)
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Text(
-                                text = state.targetPath,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = SpectralCyan,
-                                fontFamily = FontFamily.Monospace
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = CardSurface),
+                            border = CardDefaults.outlinedCardBorder().copy(
+                                brush = Brush.linearGradient(
+                                    listOf(EngineEmerald.copy(alpha = 0.5f), EngineEmerald.copy(alpha = 0.2f))
+                                )
                             )
-                        }
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(28.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(68.dp)
+                                        .clip(CircleShape)
+                                        .background(EngineEmerald.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(36.dp),
+                                        tint = EngineEmerald
+                                    )
+                                }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                Text(
+                                    text = "All Songs Organized!",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPhosphor
+                                )
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Text(
+                                    text = "Successfully copied ${state.copiedCount} songs to your music collection.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    color = TextMuted
+                                )
+
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(CardSurfaceElevated)
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        text = state.targetPath,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPhosphor.copy(alpha = 0.9f)
+                                    )
+                                }
+                            }
+                        }
 
                         // Delete / Trash Originals Option
                         if (deleteState is DeleteState.Success) {
                             val success = deleteState as DeleteState.Success
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .border(1.dp, EngineEmerald.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                                    .background(ObsidianVoid)
-                                    .padding(14.dp)
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = CardDefaults.cardColors(containerColor = CardSurface),
+                                border = CardDefaults.outlinedCardBorder().copy(
+                                    brush = Brush.linearGradient(
+                                        listOf(EngineEmerald.copy(alpha = 0.5f), EngineEmerald.copy(alpha = 0.2f))
+                                    )
+                                )
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     Icon(
                                         imageVector = Icons.Default.CheckCircle,
                                         contentDescription = null,
                                         tint = EngineEmerald,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(24.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
-                                            text = if (success.isTrashed) "MOVED TO TRASH / RECENTLY DELETED" else "ORIGINALS CLEANED UP",
-                                            style = MaterialTheme.typography.labelSmall,
+                                            text = if (success.isTrashed) "Originals Moved to Trash" else "Originals Cleaned Up",
+                                            style = MaterialTheme.typography.bodyLarge,
                                             fontWeight = FontWeight.Bold,
                                             color = EngineEmerald
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "${success.deletedCount} source tracks removed. No duplicate files remain.",
+                                            text = "${success.deletedCount} source songs removed. No duplicate files remain.",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = TextMuted
                                         )
                                     }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(14.dp))
                         } else if (deleteState is DeleteState.InProgress) {
                             Row(
                                 modifier = Modifier
@@ -371,68 +344,86 @@ fun CopyScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
+                                    modifier = Modifier.size(20.dp),
                                     strokeWidth = 2.dp,
                                     color = FilterRed
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
                                     text = "Cleaning up original songs…",
-                                    style = MaterialTheme.typography.labelSmall,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = TextPhosphor
                                 )
                             }
-                            Spacer(modifier = Modifier.height(14.dp))
                         } else if (state.originalFiles.isNotEmpty()) {
-                            OutlinedButton(
-                                onClick = { showDeleteConfirmDialog = true },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(1.dp, FilterRed.copy(alpha = 0.7f)),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = FilterRed)
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = CardSurface),
+                                border = CardDefaults.outlinedCardBorder().copy(
+                                    brush = Brush.linearGradient(listOf(DividerSubtle, DividerSubtle))
+                                )
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.DeleteSweep,
-                                    contentDescription = null,
-                                    tint = FilterRed,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "DELETE ORIGINAL COPIES",
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = FilterRed
-                                )
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(18.dp)
+                                ) {
+                                    Text(
+                                        text = "Avoid Duplicate Copies?",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TextPhosphor
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Now that songs are copied to Music/${state.targetPath.substringAfterLast('/')}, you can move the original files to Trash / Recently Deleted to free up space.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = TextMuted
+                                    )
+                                    Spacer(modifier = Modifier.height(14.dp))
+
+                                    OutlinedButton(
+                                        onClick = { showDeleteConfirmDialog = true },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(46.dp),
+                                        shape = RoundedCornerShape(23.dp),
+                                        border = BorderStroke(1.dp, FilterRed.copy(alpha = 0.7f)),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = FilterRed)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.DeleteSweep,
+                                            contentDescription = null,
+                                            tint = FilterRed,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Delete Original Copies",
+                                            fontWeight = FontWeight.Bold,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = FilterRed
+                                        )
+                                    }
+                                }
                             }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = "Moves source songs to Trash / Recently Deleted to prevent duplicate copies.",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 11.sp),
-                                textAlign = TextAlign.Center,
-                                color = TextMuted
-                            )
-
-                            Spacer(modifier = Modifier.height(14.dp))
                         }
 
                         if (showDeleteConfirmDialog) {
                             AlertDialog(
-                                containerColor = ObsidianContainer,
+                                containerColor = CardSurfaceElevated,
                                 titleContentColor = TextPhosphor,
                                 textContentColor = TextMuted,
+                                shape = RoundedCornerShape(20.dp),
                                 onDismissRequest = { showDeleteConfirmDialog = false },
-                                title = { Text("Clean Up Original Songs?") },
+                                title = { Text("Delete Original Songs?", fontWeight = FontWeight.Bold) },
                                 text = {
                                     Column {
                                         Text(
-                                            text = "You have safely copied ${state.copiedCount} songs to ${state.targetPath}.\n\nDo you want to remove the original files from their source folders to avoid having two copies on your phone?\n\nOn devices with 'Trash' or 'Recently Deleted', files are safely moved there so they can be restored if needed.",
+                                            text = "You have safely copied ${state.copiedCount} songs to ${state.targetPath}.\n\nDo you want to delete the original files from their old folders to avoid having two copies on your phone?\n\nOn devices with 'Trash' or 'Recently Deleted', files are safely moved there so you can restore them anytime.",
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = TextPhosphor
+                                            color = TextPhosphor.copy(alpha = 0.85f)
                                         )
                                     }
                                 },
@@ -446,14 +437,15 @@ fun CopyScreen(
                                                 )
                                             }
                                         },
+                                        shape = RoundedCornerShape(16.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = FilterRed)
                                     ) {
-                                        Text("DELETE ORIGINALS", color = ObsidianVoid, fontWeight = FontWeight.Bold)
+                                        Text("Delete Originals", color = Color.White, fontWeight = FontWeight.Bold)
                                     }
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { showDeleteConfirmDialog = false }) {
-                                        Text("KEEP BOTH", color = TextMuted)
+                                        Text("Keep Both", color = TextMuted)
                                     }
                                 }
                             )
@@ -463,64 +455,74 @@ fun CopyScreen(
                             onClick = onNavigateHome,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(50.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = SpectralCyan)
+                                .height(52.dp),
+                            shape = RoundedCornerShape(26.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AccentWarm,
+                                contentColor = Color.White
+                            )
                         ) {
                             Text(
-                                text = "RETURN TO HOME",
+                                text = "Done",
                                 fontWeight = FontWeight.Bold,
-                                color = ObsidianVoid,
-                                style = MaterialTheme.typography.labelSmall
+                                style = MaterialTheme.typography.titleMedium
                             )
                         }
+
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
 
                 is CopyState.Error -> {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, FilterRed.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                            .background(ObsidianContainerLow)
-                            .padding(28.dp)
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = CardSurface),
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            brush = Brush.linearGradient(listOf(DividerSubtle, DividerSubtle))
+                        )
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ErrorOutline,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = FilterRed
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "TRANSFER ERROR",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = FilterRed,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = state.message,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = TextMuted
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(
-                            onClick = onNavigateHome,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(28.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("RETURN TO HOME")
+                            Icon(
+                                imageVector = Icons.Default.ErrorOutline,
+                                contentDescription = null,
+                                modifier = Modifier.size(54.dp),
+                                tint = FilterRed
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Transfer Failed",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = FilterRed,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = state.message,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = TextMuted
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Button(
+                                onClick = onNavigateHome,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(24.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = AccentWarm)
+                            ) {
+                                Text("Back to Home", fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
 
                 is CopyState.Idle -> {
-                    CircularProgressIndicator(color = SpectralCyan)
+                    CircularProgressIndicator(color = AccentWarm)
                 }
             }
         }

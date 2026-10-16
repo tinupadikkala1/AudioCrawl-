@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +31,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +46,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,14 +55,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.audiocrawl.ui.components.AudioCrawlTopAppBar
+import com.audiocrawl.ui.theme.AccentWarm
+import com.audiocrawl.ui.theme.CardSurface
+import com.audiocrawl.ui.theme.CardSurfaceElevated
+import com.audiocrawl.ui.theme.DividerSubtle
 import com.audiocrawl.ui.theme.EngineEmerald
-import com.audiocrawl.ui.theme.ObsidianContainer
-import com.audiocrawl.ui.theme.ObsidianContainerLow
-import com.audiocrawl.ui.theme.ObsidianDelimiter
-import com.audiocrawl.ui.theme.ObsidianSurface
-import com.audiocrawl.ui.theme.ObsidianVoid
-import com.audiocrawl.ui.theme.SpectralCyan
-import com.audiocrawl.ui.theme.TextBody
+import com.audiocrawl.ui.theme.ScreenBackground
 import com.audiocrawl.ui.theme.TextMuted
 import com.audiocrawl.ui.theme.TextPhosphor
 
@@ -81,11 +81,11 @@ fun ResultsScreen(
     val allSelected = allFiles.isNotEmpty() && selectedCount == allFiles.size
 
     Scaffold(
-        containerColor = ObsidianVoid,
+        containerColor = ScreenBackground,
         topBar = {
             AudioCrawlTopAppBar(
-                title = "VAULT STAGING",
-                subtitle = "${allFiles.size} ISOLATED",
+                title = "Songs (${allFiles.size})",
+                subtitle = if (selectedCount > 0) "$selectedCount selected" else "Select songs to copy",
                 onBackClick = onNavigateBack,
                 actions = {
                     TextButton(onClick = {
@@ -94,13 +94,15 @@ fun ResultsScreen(
                         Icon(
                             imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
                             contentDescription = null,
-                            tint = SpectralCyan
+                            tint = AccentWarm,
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (allSelected) "DESELECT" else "SELECT ALL",
-                            color = SpectralCyan,
-                            style = MaterialTheme.typography.labelSmall
+                            text = if (allSelected) "Deselect" else "Select All",
+                            color = AccentWarm,
+                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
@@ -121,49 +123,58 @@ fun ResultsScreen(
                     )
                 }
 
-                // Sticky Vault Batch Commit Footer
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .background(ObsidianContainerLow)
-                        .padding(16.dp)
+                // Sticky Bottom Action Bar
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardSurface),
+                    border = CardDefaults.outlinedCardBorder().copy(
+                        brush = Brush.linearGradient(listOf(DividerSubtle, DividerSubtle))
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Folder,
-                                contentDescription = null,
-                                tint = SpectralCyan,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(CardSurfaceElevated),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Folder,
+                                    contentDescription = null,
+                                    tint = AccentWarm,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
                             OutlinedTextField(
                                 value = targetFolderName,
                                 onValueChange = { viewModel.updateTargetFolderName(it) },
-                                label = { Text("Vault Target (/Music/…)") },
+                                label = { Text("Destination (/Music/…)") },
                                 modifier = Modifier.weight(1f),
                                 singleLine = true,
-                                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    color = TextPhosphor,
-                                    fontFamily = FontFamily.Monospace
-                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPhosphor),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = SpectralCyan,
-                                    unfocusedBorderColor = ObsidianDelimiter,
-                                    focusedContainerColor = ObsidianVoid,
-                                    unfocusedContainerColor = ObsidianVoid
+                                    focusedBorderColor = AccentWarm,
+                                    unfocusedBorderColor = DividerSubtle,
+                                    focusedContainerColor = ScreenBackground,
+                                    unfocusedContainerColor = ScreenBackground
                                 )
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         Button(
                             onClick = {
@@ -176,23 +187,24 @@ fun ResultsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(50.dp),
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(25.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = SpectralCyan,
-                                disabledContainerColor = ObsidianDelimiter
+                                containerColor = AccentWarm,
+                                contentColor = Color.White,
+                                disabledContainerColor = CardSurfaceElevated,
+                                disabledContentColor = TextMuted
                             )
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
                                 contentDescription = null,
-                                tint = if (selectedCount > 0) ObsidianVoid else TextMuted
+                                modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "COMMIT TO VAULT ($selectedCount TRACKS)",
+                                text = if (selectedCount > 0) "Copy $selectedCount Songs to Music/$targetFolderName" else "Select Songs to Copy",
                                 fontWeight = FontWeight.Bold,
-                                color = if (selectedCount > 0) ObsidianVoid else TextMuted,
-                                style = MaterialTheme.typography.labelSmall
+                                style = MaterialTheme.typography.titleMedium
                             )
                         }
                     }
@@ -205,65 +217,101 @@ fun ResultsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Search Bar in Obsidian Pod style
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.updateSearchQuery(it) },
-                placeholder = { Text("Search by title, artist, format…", color = TextMuted) },
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = SpectralCyan)
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.updateSearchQuery("") }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", tint = TextMuted)
-                        }
-                    }
-                },
+            // Search Bar
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = RoundedCornerShape(8.dp),
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPhosphor),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = SpectralCyan,
-                    unfocusedBorderColor = ObsidianDelimiter,
-                    focusedContainerColor = ObsidianContainerLow,
-                    unfocusedContainerColor = ObsidianContainerLow
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.updateSearchQuery(it) },
+                    placeholder = { Text("Search songs, artists, albums…", color = TextMuted) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = TextMuted,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.updateSearchQuery("") }) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear search",
+                                    tint = TextMuted,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPhosphor),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AccentWarm,
+                        unfocusedBorderColor = DividerSubtle,
+                        focusedContainerColor = CardSurface,
+                        unfocusedContainerColor = CardSurface
+                    )
                 )
-            )
+            }
 
+            // Results List
             if (filteredFiles.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
+                        .padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.MusicOff,
-                            contentDescription = null,
-                            modifier = Modifier.size(56.dp),
-                            tint = TextMuted
-                        )
-                        Spacer(modifier = Modifier.height(14.dp))
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(CardSurfaceElevated),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (searchQuery.isNotEmpty()) Icons.Default.Search else Icons.Default.MusicOff,
+                                contentDescription = null,
+                                modifier = Modifier.size(36.dp),
+                                tint = TextMuted
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = if (searchQuery.isNotBlank()) "No files match \"$searchQuery\"" else "No music files isolated",
+                            text = if (searchQuery.isNotEmpty()) "No matching songs" else "No songs found",
                             style = MaterialTheme.typography.titleMedium,
-                            color = TextMuted,
-                            textAlign = TextAlign.Center
+                            fontWeight = FontWeight.Bold,
+                            color = TextPhosphor
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = if (searchQuery.isNotEmpty()) "Try a different search keyword" else "Try scanning external SD card or adjusting duration filter in settings",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = TextMuted
                         )
                     }
                 }
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(filteredFiles, key = { it.id }) { audioFile ->
+                    items(
+                        items = filteredFiles,
+                        key = { it.id }
+                    ) { audioFile ->
                         AudioFileItem(
                             audioFile = audioFile,
                             isSelected = selectedIds.contains(audioFile.id),
@@ -271,6 +319,11 @@ fun ResultsScreen(
                             onToggleSelect = { viewModel.toggleSelection(audioFile) },
                             onPlayPauseClick = { viewModel.playPreview(audioFile) }
                         )
+                    }
+
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }

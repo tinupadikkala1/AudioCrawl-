@@ -60,10 +60,9 @@ val Typography = Typography(
         lineHeight = 18.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 11.sp,
-        lineHeight = 14.sp,
-        letterSpacing = 0.04.sp
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        lineHeight = 16.sp
     )
 )

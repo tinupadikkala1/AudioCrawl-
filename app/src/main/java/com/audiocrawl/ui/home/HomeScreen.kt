@@ -27,12 +27,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.FolderSpecial
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.SdCard
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -57,7 +60,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,18 +67,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.audiocrawl.ui.components.AudioCrawlTopAppBar
 import com.audiocrawl.ui.components.PermissionRequester
-import com.audiocrawl.ui.theme.AtmosphereBlue
+import com.audiocrawl.ui.theme.AccentWarm
+import com.audiocrawl.ui.theme.AccentWarmGlow
+import com.audiocrawl.ui.theme.CardSurface
+import com.audiocrawl.ui.theme.CardSurfaceElevated
+import com.audiocrawl.ui.theme.DividerSubtle
 import com.audiocrawl.ui.theme.EngineEmerald
-import com.audiocrawl.ui.theme.ObsidianContainer
-import com.audiocrawl.ui.theme.ObsidianContainerHigh
-import com.audiocrawl.ui.theme.ObsidianContainerLow
-import com.audiocrawl.ui.theme.ObsidianDelimiter
-import com.audiocrawl.ui.theme.ObsidianSurface
-import com.audiocrawl.ui.theme.ObsidianVoid
-import com.audiocrawl.ui.theme.SpectralCyan
-import com.audiocrawl.ui.theme.SpectralCyanDim
-import com.audiocrawl.ui.theme.TextBody
-import com.audiocrawl.ui.theme.TextDim
+import com.audiocrawl.ui.theme.ScreenBackground
 import com.audiocrawl.ui.theme.TextMuted
 import com.audiocrawl.ui.theme.TextPhosphor
 
@@ -90,17 +87,17 @@ fun HomeScreen(
 
     PermissionRequester(onPermissionsGranted = {}) {
         Scaffold(
-            containerColor = ObsidianVoid,
+            containerColor = ScreenBackground,
             topBar = {
                 AudioCrawlTopAppBar(
-                    title = "AUDIOCRAWL",
-                    subtitle = "V2.4 ONLINE",
+                    title = "AudioCrawl",
+                    subtitle = "Music Library Organizer",
                     actions = {
                         IconButton(onClick = onNavigateToSettings) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
-                                tint = TextPhosphor
+                                tint = TextPhosphor.copy(alpha = 0.85f)
                             )
                         }
                     }
@@ -111,394 +108,401 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 20.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                // Hero Telemetry Badge Banner
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                        .background(ObsidianContainerLow)
-                        .padding(14.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(EngineEmerald)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "7-LAYER FILTER ENGINE READY",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = EngineEmerald,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Text(
-                            text = "/storage/emulated/0",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = TextMuted,
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
-                }
-
-                // Central Hero Radial Scan Action Trigger (Obsidian Signal radar design)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(12.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(ObsidianContainer, ObsidianSurface)
+                // Hero Card: Welcoming music scan launcher
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardSurface),
+                    border = CardDefaults.outlinedCardBorder().copy(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                DividerSubtle.copy(alpha = 0.8f),
+                                DividerSubtle.copy(alpha = 0.3f)
                             )
                         )
-                        .padding(vertical = 28.dp, horizontal = 16.dp),
-                    contentAlignment = Alignment.Center
+                    )
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Pulse radar glow ring animation
-                        val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+                        // Vinyl disc / music badge with subtle warm pulse
+                        val infiniteTransition = rememberInfiniteTransition(label = "heroPulse")
                         val pulseScale by infiniteTransition.animateFloat(
                             initialValue = 1f,
-                            targetValue = 1.08f,
+                            targetValue = 1.05f,
                             animationSpec = infiniteRepeatable(
-                                animation = tween(1400, easing = FastOutSlowInEasing),
+                                animation = tween(1600, easing = FastOutSlowInEasing),
                                 repeatMode = RepeatMode.Reverse
                             ),
-                            label = "pulseScale"
+                            label = "heroPulseScale"
                         )
 
                         Box(
                             modifier = Modifier
-                                .size(110.dp)
+                                .size(96.dp)
                                 .scale(pulseScale)
                                 .clip(CircleShape)
-                                .border(2.dp, SpectralCyan.copy(alpha = 0.35f), CircleShape)
-                                .background(SpectralCyan.copy(alpha = 0.08f)),
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            AccentWarmGlow,
+                                            AccentWarm.copy(alpha = 0.15f),
+                                            Color.Transparent
+                                        )
+                                    )
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(80.dp)
+                                    .size(72.dp)
                                     .clip(CircleShape)
-                                    .border(2.dp, SpectralCyan, CircleShape)
-                                    .background(ObsidianVoid)
-                                    .clickable {
-                                        viewModel.startScanning()
-                                        onNavigateToScan()
-                                    },
+                                    .background(
+                                        Brush.linearGradient(
+                                            colors = listOf(AccentWarm, Color(0xFFD4381C))
+                                        )
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.GraphicEq,
-                                    contentDescription = "Start Deep Scan",
-                                    tint = SpectralCyan,
+                                    imageVector = Icons.Default.MusicNote,
+                                    contentDescription = null,
+                                    tint = Color.White,
                                     modifier = Modifier.size(36.dp)
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
                         Text(
-                            text = "START DEEP CRAWL",
+                            text = "Find Your Songs",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = TextPhosphor,
-                            letterSpacing = 1.sp
+                            color = TextPhosphor
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Isolate music tracks • Strip speech & voice clips",
+                            text = "AudioCrawl scans your phone for music tracks while filtering out voice notes, call recordings, and audio clips.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextMuted
+                            color = TextMuted,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
-                    }
-                }
 
-                // 7-Layer Filter Strip Badges
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                        .background(ObsidianContainerLow)
-                        .padding(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "ACTIVE FILTRATION PIPELINE",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = TextMuted
-                        )
-                        Text(
-                            text = "7/7 ACTIVE",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = SpectralCyan
-                        )
-                    }
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        listOf("SQL", "EXT", "AMR", "PATH", "REGEX", "TIME", "CUSTOM").forEach { layer ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .border(1.dp, ObsidianDelimiter, RoundedCornerShape(4.dp))
-                                    .background(ObsidianContainer)
-                                    .padding(horizontal = 7.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = layer,
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                    color = EngineEmerald,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                        Button(
+                            onClick = {
+                                viewModel.startScanning()
+                                onNavigateToScan()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(26.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AccentWarm,
+                                contentColor = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MusicNote,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Scan Storage for Songs",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
 
-                // Settings Cards in Obsidian Pod style
-                // 1. SD Card Toggle
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                        .background(ObsidianContainerLow)
-                        .padding(14.dp)
+                // Destination Folder Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardSurface),
+                    border = CardDefaults.outlinedCardBorder().copy(brush = Brush.linearGradient(listOf(DividerSubtle, DividerSubtle)))
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SdCard,
-                                contentDescription = null,
-                                tint = SpectralCyan,
-                                modifier = Modifier.size(20.dp)
-                            )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(CardSurfaceElevated),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FolderSpecial,
+                                    contentDescription = null,
+                                    tint = AccentWarm,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Scan Removable SD Storage",
+                                    text = "Destination Folder",
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = TextPhosphor,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextPhosphor
                                 )
                                 Text(
-                                    text = "Traverse secondary filesystem trees",
+                                    text = "Selected songs will be copied here",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = TextMuted
                                 )
                             }
                         }
-                        Switch(
-                            checked = scanConfig.includeSdCard,
-                            onCheckedChange = { viewModel.toggleIncludeSdCard(it) },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = ObsidianVoid,
-                                checkedTrackColor = SpectralCyan,
-                                uncheckedThumbColor = TextMuted,
-                                uncheckedTrackColor = ObsidianContainerHigh
-                            )
-                        )
-                    }
-                }
 
-                // 2. Minimum Duration Threshold Slider
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                        .background(ObsidianContainerLow)
-                        .padding(14.dp)
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Tune,
-                                    contentDescription = null,
-                                    tint = SpectralCyan,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = "Duration Noise Gate",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = TextPhosphor,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                            val currentSeconds = (scanConfig.minDurationMs / 1000).toInt()
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .border(1.dp, SpectralCyanDim.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                                    .background(ObsidianContainer)
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = "≥ ${currentSeconds}s",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = SpectralCyan
-                                )
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Rejects quick audio clips, chimes, and voice memos",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextMuted
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        val currentSeconds = (scanConfig.minDurationMs / 1000).toInt()
-                        var sliderPosition by remember(scanConfig.minDurationMs) {
-                            mutableFloatStateOf(currentSeconds.toFloat())
-                        }
-
-                        Slider(
-                            value = sliderPosition,
-                            onValueChange = { sliderPosition = it },
-                            onValueChangeFinished = {
-                                viewModel.updateMinDuration(sliderPosition.toInt())
-                            },
-                            valueRange = 10f..120f,
-                            steps = 10,
-                            colors = SliderDefaults.colors(
-                                thumbColor = SpectralCyan,
-                                activeTrackColor = SpectralCyan,
-                                inactiveTrackColor = ObsidianContainerHigh
-                            )
-                        )
-                    }
-                }
-
-                // 3. Vault Output Target
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                        .background(ObsidianContainerLow)
-                        .padding(14.dp)
-                ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Folder,
-                                contentDescription = null,
-                                tint = SpectralCyan,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "Vault Destination",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = TextPhosphor,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
                         OutlinedTextField(
                             value = scanConfig.targetFolderName,
                             onValueChange = { viewModel.updateTargetFolderName(it) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                color = TextPhosphor,
-                                fontFamily = FontFamily.Monospace
-                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = TextPhosphor),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = SpectralCyan,
-                                unfocusedBorderColor = ObsidianDelimiter,
-                                focusedContainerColor = ObsidianVoid,
-                                unfocusedContainerColor = ObsidianVoid
+                                focusedBorderColor = AccentWarm,
+                                unfocusedBorderColor = DividerSubtle,
+                                focusedContainerColor = ScreenBackground,
+                                unfocusedContainerColor = ScreenBackground
                             )
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
                         Text(
                             text = "Path: /storage/emulated/0/Music/${scanConfig.targetFolderName}",
                             style = MaterialTheme.typography.labelSmall,
-                            color = TextMuted,
-                            fontFamily = FontFamily.Monospace
+                            color = TextMuted
                         )
                     }
                 }
 
-                // Navigation to Advanced Filter Rules
-                Box(
+                // Scan Options Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardSurface),
+                    border = CardDefaults.outlinedCardBorder().copy(brush = Brush.linearGradient(listOf(DividerSubtle, DividerSubtle)))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Scan Preferences",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPhosphor
+                        )
+
+                        // 1. SD Card Toggle
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(CardSurfaceElevated),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.SdCard,
+                                        contentDescription = null,
+                                        tint = AccentWarm,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Include SD Card",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPhosphor
+                                    )
+                                    Text(
+                                        text = "Scan removable external storage",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = TextMuted
+                                    )
+                                }
+                            }
+                            Switch(
+                                checked = scanConfig.includeSdCard,
+                                onCheckedChange = { viewModel.toggleIncludeSdCard(it) },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = AccentWarm,
+                                    uncheckedThumbColor = TextMuted,
+                                    uncheckedTrackColor = CardSurfaceElevated
+                                )
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(DividerSubtle)
+                        )
+
+                        // 2. Minimum Duration Threshold Slider
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(CardSurfaceElevated),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Timer,
+                                            contentDescription = null,
+                                            tint = AccentWarm,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = "Minimum Duration",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextPhosphor
+                                        )
+                                        Text(
+                                            text = "Ignores short sounds & voice notes",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = TextMuted
+                                        )
+                                    }
+                                }
+                                val currentSeconds = (scanConfig.minDurationMs / 1000).toInt()
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(AccentWarm.copy(alpha = 0.15f))
+                                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "${currentSeconds}s",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = AccentWarm
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            val currentSeconds = (scanConfig.minDurationMs / 1000).toInt()
+                            var sliderPosition by remember(scanConfig.minDurationMs) {
+                                mutableFloatStateOf(currentSeconds.toFloat())
+                            }
+
+                            Slider(
+                                value = sliderPosition,
+                                onValueChange = { sliderPosition = it },
+                                onValueChangeFinished = {
+                                    viewModel.updateMinDuration(sliderPosition.toInt())
+                                },
+                                valueRange = 10f..120f,
+                                steps = 10,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = AccentWarm,
+                                    activeTrackColor = AccentWarm,
+                                    inactiveTrackColor = CardSurfaceElevated
+                                )
+                            )
+                        }
+                    }
+                }
+
+                // Excluded Folders Card
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                        .background(ObsidianContainerLow)
-                        .clickable(onClick = onNavigateToSettings)
-                        .padding(14.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(onClick = onNavigateToSettings),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardSurface),
+                    border = CardDefaults.outlinedCardBorder().copy(brush = Brush.linearGradient(listOf(DividerSubtle, DividerSubtle)))
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(18.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Security,
-                                contentDescription = null,
-                                tint = AtmosphereBlue,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(CardSurfaceElevated),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Security,
+                                    contentDescription = null,
+                                    tint = AccentWarm,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Inspect 40+ Blacklist Rules",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = TextPhosphor,
-                                    fontWeight = FontWeight.SemiBold
+                                    text = "Excluded Folders",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium,
+                                    color = TextPhosphor
                                 )
                                 Text(
-                                    text = "${scanConfig.excludedFolders.size} default excluded directories armed",
+                                    text = "${scanConfig.excludedFolders.size} folders filtered (WhatsApp, Telegram, etc.)",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = TextMuted
                                 )
