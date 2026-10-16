@@ -37,8 +37,19 @@ sealed interface CopyState {
 
     data class Complete(
         val copiedCount: Int,
-        val targetPath: String
+        val targetPath: String,
+        val originalFiles: List<AudioFile> = emptyList()
     ) : CopyState
 
     data class Error(val message: String) : CopyState
+}
+
+/**
+ * State for deleting or trashing original files after copying.
+ */
+sealed interface DeleteState {
+    data object Idle : DeleteState
+    data object InProgress : DeleteState
+    data class Success(val deletedCount: Int, val isTrashed: Boolean) : DeleteState
+    data class Error(val message: String) : DeleteState
 }

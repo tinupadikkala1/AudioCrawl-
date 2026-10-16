@@ -151,7 +151,7 @@ class CopyService : Service() {
                 }
 
                 val finalPath = "${Environment.DIRECTORY_MUSIC}/$targetFolderName"
-                _copyState.value = CopyState.Complete(copiedCount, finalPath)
+                _copyState.value = CopyState.Complete(copiedCount, finalPath, files)
             } catch (e: Exception) {
                 _copyState.value = CopyState.Error(e.message ?: "File copy failed")
             } finally {
