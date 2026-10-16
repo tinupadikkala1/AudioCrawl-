@@ -13,10 +13,7 @@ class FilterEngineTest {
 
     @Before
     fun setUp() {
-        // Mock-free instance: FilterEngine.evaluateFile only needs ScanConfig
-        filterEngine = FilterEngine(
-            settingsRepository = object : Any() {} as com.audiocrawl.data.SettingsRepository
-        )
+        filterEngine = FilterEngine()
     }
 
     // ====================================================
@@ -254,6 +251,158 @@ class FilterEngineTest {
                 "Short_Chime.mp3",
                 12_000L, // 12 seconds
                 testConfig
+            )
+        )
+    }
+
+    @Test
+    fun shouldExclude_zeroOrNegativeDuration() {
+        assertFalse(
+            "0ms duration should be rejected",
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/Music/unknown_track.mp3",
+                "unknown_track.mp3",
+                0L,
+                testConfig
+            )
+        )
+        assertFalse(
+            "Negative duration should be rejected",
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/Music/corrupted.wav",
+                "corrupted.wav",
+                -1L,
+                testConfig
+            )
+        )
+    }
+
+    @Test
+    fun shouldExclude_systemGeneratedAndTestAudioFiles() {
+        // User's exact reported file
+        assertFalse(
+            "Expected test-44100Hz-be-1ch-4bytes to be filtered out",
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/Download/test-44100Hz-be-1ch-4bytes.wav",
+                "test-44100Hz-be-1ch-4bytes.wav",
+                180_000L,
+                testConfig
+            )
+        )
+
+        // Audio test tones & specs
+        val testFiles = listOf(
+            "test_48000Hz_2ch_16bit.wav",
+            "sine_440hz.wav",
+            "sweep_20hz_20khz.flac",
+            "pink_noise_test.mp3",
+            "latency_test_1ch.wav",
+            "audio_test_tone.wav",
+            "cts_media_audio_test.mp3",
+            "benchmark_audio_sample.ogg"
+        )
+        for (fileName in testFiles) {
+            assertFalse(
+                "Expected $fileName to be excluded as test audio",
+                filterEngine.evaluateFile(
+                    "/storage/emulated/0/Download/$fileName",
+                    fileName,
+                    60_000L,
+                    testConfig
+                )
+            )
+        }
+    }
+
+    @Test
+    fun shouldExclude_uiSoundsAndEffects() {
+        val sfxFiles = listOf(
+            "click_01.mp3",
+            "ui_touch_sound.ogg",
+            "sfx_explosion_01.wav",
+            "camera_click_shutter.mp3",
+            "tts_speech_prompt.m4a"
+        )
+        for (fileName in sfxFiles) {
+            assertFalse(
+                "Expected SFX/UI $fileName to be excluded",
+                filterEngine.evaluateFile(
+                    "/storage/emulated/0/Audio/$fileName",
+                    fileName,
+                    45_000L,
+                    testConfig
+                )
+            )
+        }
+    }
+
+    @Test
+    fun shouldExclude_hiddenDirectoriesAndCacheFiles() {
+        // Hidden folder
+        assertFalse(
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/.cache/audio_sample.mp3",
+                "audio_sample.mp3",
+                60_000L,
+                testConfig
+            )
+        )
+
+        // Hidden file
+        assertFalse(
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/Music/.hidden_track.mp3",
+                ".hidden_track.mp3",
+                60_000L,
+                testConfig
+            )
+        )
+
+        // Hash / UUID cache filename
+        assertFalse(
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/Download/3fa85f64-5717-4562-b3fc-2c963f66afa6.mp3",
+                "3fa85f64-5717-4562-b3fc-2c963f66afa6.mp3",
+                60_000L,
+                testConfig
+            )
+        )
+    }
+
+    @Test
+    fun shouldExclude_tinyStubFiles() {
+        assertFalse(
+            "Files smaller than 200 KB should be excluded",
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/Music/sample.mp3",
+                "sample.mp3",
+                45_000L,
+                testConfig,
+                sizeBytes = 15_000L // 15 KB
+            )
+        )
+    }
+
+    @Test
+    fun shouldExclude_disallowedMetadata() {
+        assertFalse(
+            "Audio with test title should be excluded",
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/Music/track.mp3",
+                "track.mp3",
+                60_000L,
+                testConfig,
+                title = "test audio sweep"
+            )
+        )
+        assertFalse(
+            "Audio with sound effect artist should be excluded",
+            filterEngine.evaluateFile(
+                "/storage/emulated/0/Music/track.mp3",
+                "track.mp3",
+                60_000L,
+                testConfig,
+                artist = "sound effect"
             )
         )
     }

@@ -70,7 +70,17 @@ class FileSystemScanner @Inject constructor(
                         return@forEach
                     }
 
-                    if (filterEngine.evaluateFile(file.absolutePath, file.name, durationMs, config)) {
+                    val sizeBytes = file.length()
+                    if (filterEngine.evaluateFile(
+                        filePath = file.absolutePath,
+                        fileName = file.name,
+                        durationMs = durationMs,
+                        config = config,
+                        sizeBytes = sizeBytes,
+                        title = title,
+                        artist = artist,
+                        album = album
+                    )) {
                         val audioFile = AudioFile(
                             id = file.hashCode().toLong(),
                             title = title?.ifBlank { null } ?: file.nameWithoutExtension,

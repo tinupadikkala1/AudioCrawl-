@@ -63,11 +63,39 @@ data class ScanConfig(
 
             // App private data & caches
             "Android/data",
+            "Android/obb",
             "Facebook",
             "Instagram",
             "TikTok",
             "Snapchat",
-            ".thumbnails"
+            ".thumbnails",
+            ".cache",
+            "cache",
+            "caches",
+            "LOST.DIR",
+            "Lost.dir",
+
+            // Test, Benchmark & Synthetic Audio
+            "test",
+            "tests",
+            "testing",
+            "audio_test",
+            "sound_test",
+            "benchmark",
+            "benchmarks",
+            "cts",
+            "gts",
+            "vts",
+
+            // Sound effects & UI assets
+            "SFX",
+            "sfx",
+            "SoundEffects",
+            "Sound Effects",
+            "assets",
+            "raw",
+            "ui_sounds",
+            "System/media"
         )
     }
 }

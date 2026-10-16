@@ -14,7 +14,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class FilterEngine @Inject constructor(
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository? = null
 ) {
 
     /**
@@ -134,6 +134,37 @@ class FilterEngine @Inject constructor(
         add(Regex("""^rec[_-]\d+.*""", RegexOption.IGNORE_CASE))
         // Raw timestamp filenames: "20261009_143022.mp3", "20261009-143022.m4a"
         add(Regex("""^\d{8}[_-]\d{6}\.(m4a|wav|mp3|ogg|aac|opus)$""", RegexOption.IGNORE_CASE))
+
+        // ==========================================
+        // 13. System-Generated, Audio Test & Benchmark Audio
+        // ==========================================
+        // Test audio specifications: "test-44100Hz-be-1ch-4bytes", "test_48000Hz_2ch_16bit.wav"
+        add(Regex("""^test[-_].*""", RegexOption.IGNORE_CASE))
+        add(Regex(""".*[-_]test\.[a-z0-9]+$""", RegexOption.IGNORE_CASE))
+        add(Regex("""\b\d{4,6}\s*(?:hz|khz)\b""", RegexOption.IGNORE_CASE))
+        add(Regex("""\b(?:1ch|2ch|4ch|6ch|8ch|mono|stereo|surround|5\.1ch|7\.1ch)\b""", RegexOption.IGNORE_CASE))
+        add(Regex("""\b(?:\d+bytes?|\d+bits?|[1-4]byte|16bit|24bit|32bit|64bit)\b""", RegexOption.IGNORE_CASE))
+        add(Regex("""\b(?:be|le|endian|bigendian|littleendian|pcm|raw|s16le|s16be|s24le|s24be)\b""", RegexOption.IGNORE_CASE))
+        add(Regex("""^(?:sine|sweep|pink[-_]noise|white[-_]noise|test[-_]tone|testtone|soundcheck|latency[-_]test|loopback).*""", RegexOption.IGNORE_CASE))
+        add(Regex("""^(?:cts|gts|vts|benchmark|diag|diagnostics|dummy|silence|silent)[-_].*""", RegexOption.IGNORE_CASE))
+        add(Regex("""^(?:audio[-_]test|test[-_]audio|sample[-_]audio).*""", RegexOption.IGNORE_CASE))
+
+        // ==========================================
+        // 14. UI, Sound Effects (SFX), System & Game Audio
+        // ==========================================
+        add(Regex("""^(?:sfx|snd|sound[-_]?effect|effect|fx)[-_].*""", RegexOption.IGNORE_CASE))
+        add(Regex("""^(?:ui|btn|button|click|tap|touch|keypress|beep|boop|ding|chime|pop|shutter|camera_click|alert|prompt|guidance)[-_].*""", RegexOption.IGNORE_CASE))
+        add(Regex("""^(?:tts|speech|vocalizer|voice[-_]assistant)[-_].*""", RegexOption.IGNORE_CASE))
+        add(Regex("""^(?:cache|temp|tmp|preview|snippet|chunk|seg)[-_].*""", RegexOption.IGNORE_CASE))
+        add(Regex("""^(?:ad|rewarded)[-_].*""", RegexOption.IGNORE_CASE))
+
+        // ==========================================
+        // 15. Hash / UUID Cache Filenames (e.g. ad caches, temp buffers)
+        // ==========================================
+        // UUID filename: 3fa85f64-5717-4562-b3fc-2c963f66afa6.mp3
+        add(Regex("""^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-z0-9]+$""", RegexOption.IGNORE_CASE))
+        // MD5/SHA hex-only filename: d41d8cd98f00b204e9800998ecf8427e.mp3 (32+ hex characters)
+        add(Regex("""^[0-9a-f]{32,64}\.[a-z0-9]+$""", RegexOption.IGNORE_CASE))
     }
 
     /**
@@ -156,6 +187,15 @@ class FilterEngine @Inject constructor(
     }
 
     /**
+     * Set of disallowed keywords in audio tags (e.g. system tones, diagnostic suites).
+     */
+    val disallowedMetadataKeywords: Set<String> = setOf(
+        "test", "test audio", "audio test", "sample", "sound effect", "sound effects",
+        "sfx", "ringtone", "notification", "alarm", "system sound", "benchmark",
+        "voice memo", "call recording", "touch sound", "shutter"
+    )
+
+    /**
      * In-memory secondary evaluation pipeline.
      * Evaluates whether an audio file is genuine music or should be filtered out.
      */
@@ -163,10 +203,23 @@ class FilterEngine @Inject constructor(
         filePath: String,
         fileName: String,
         durationMs: Long,
-        mimeType: String? = null
+        mimeType: String? = null,
+        sizeBytes: Long = 0L,
+        title: String? = null,
+        artist: String? = null,
+        album: String? = null
     ): Boolean {
-        val config = settingsRepository.getScanConfig()
-        return evaluateFile(filePath, fileName, durationMs, config)
+        val config = settingsRepository?.getScanConfig() ?: ScanConfig()
+        return evaluateFile(
+            filePath = filePath,
+            fileName = fileName,
+            durationMs = durationMs,
+            config = config,
+            sizeBytes = sizeBytes,
+            title = title,
+            artist = artist,
+            album = album
+        )
     }
 
     /**
@@ -176,7 +229,11 @@ class FilterEngine @Inject constructor(
         filePath: String,
         fileName: String,
         durationMs: Long,
-        config: ScanConfig
+        config: ScanConfig,
+        sizeBytes: Long = 0L,
+        title: String? = null,
+        artist: String? = null,
+        album: String? = null
     ): Boolean {
         // 1. Extension check
         val extension = fileName.substringAfterLast('.', "").lowercase()
@@ -189,8 +246,17 @@ class FilterEngine @Inject constructor(
             return false
         }
 
-        // 3. Excluded folder check
+        // 3. Hidden file or hidden directory check
+        if (fileName.startsWith(".")) {
+            return false
+        }
         val normalizedPath = filePath.replace('\\', '/').lowercase()
+        val pathSegments = normalizedPath.split('/')
+        if (pathSegments.any { it.startsWith(".") && it.isNotEmpty() && it != "." && it != ".." }) {
+            return false
+        }
+
+        // 4. Excluded folder check
         for (excludedFolder in config.excludedFolders) {
             val normalizedExcluded = excludedFolder.replace('\\', '/').lowercase()
             if (normalizedPath.contains(normalizedExcluded)) {
@@ -198,16 +264,32 @@ class FilterEngine @Inject constructor(
             }
         }
 
-        // 4. Minimum duration check (skip short notifications, clicks, voice snippets)
-        // If duration is reported (>0) and below threshold, exclude
-        if (durationMs in 1 until config.minDurationMs) {
+        // 5. Strict Minimum duration check
+        // Genuine songs must have a known duration of at least config.minDurationMs (default 30s)
+        if (durationMs < config.minDurationMs) {
             return false
         }
 
-        // 5. Filename regex pattern check
+        // 6. Minimum file size check (valid music tracks are not tiny sub-200KB stubs/tones)
+        if (sizeBytes in 1 until 200_000L) {
+            return false
+        }
+
+        // 7. Filename regex pattern check
         for (pattern in excludedFilePatterns) {
             if (pattern.containsMatchIn(fileName)) {
                 return false
+            }
+        }
+
+        // 8. Disallowed metadata check (filters out explicit test / system audio tags)
+        val tagsToCheck = listOfNotNull(title, artist, album).map { it.trim().lowercase() }
+        for (tag in tagsToCheck) {
+            if (tag.isEmpty()) continue
+            for (keyword in disallowedMetadataKeywords) {
+                if (tag == keyword || tag.startsWith("$keyword ") || tag.startsWith("$keyword-") || tag.startsWith("${keyword}_")) {
+                    return false
+                }
             }
         }
 

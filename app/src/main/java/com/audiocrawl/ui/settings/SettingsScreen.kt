@@ -20,9 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOff
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,17 +44,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.audiocrawl.ui.components.AudioCrawlTopAppBar
-import com.audiocrawl.ui.theme.AtmosphereBlue
-import com.audiocrawl.ui.theme.EngineEmerald
 import com.audiocrawl.ui.theme.FilterRed
 import com.audiocrawl.ui.theme.ObsidianContainer
 import com.audiocrawl.ui.theme.ObsidianContainerLow
 import com.audiocrawl.ui.theme.ObsidianDelimiter
-import com.audiocrawl.ui.theme.ObsidianSurface
 import com.audiocrawl.ui.theme.ObsidianVoid
 import com.audiocrawl.ui.theme.SpectralCyan
 import com.audiocrawl.ui.theme.TextMuted
@@ -128,7 +122,7 @@ fun SettingsScreen(
         topBar = {
             AudioCrawlTopAppBar(
                 title = "FILTER CONFIG",
-                subtitle = "7-LAYER HEURISTICS",
+                subtitle = "EXCLUSION RULES",
                 onBackClick = onNavigateBack,
                 actions = {
                     IconButton(onClick = { showAddDialog = true }) {
@@ -147,45 +141,6 @@ fun SettingsScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(4.dp))
-
-                // Heuristic Info Telemetry Card
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .border(1.dp, ObsidianDelimiter, RoundedCornerShape(8.dp))
-                        .background(ObsidianContainerLow)
-                        .padding(14.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Security,
-                            contentDescription = null,
-                            tint = SpectralCyan,
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "7-Layer Automated Filter Engine",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = TextPhosphor
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Intelligently classifies tracks using MediaStore SQL flags, music-only extension whitelisting, speech codec locks (AMR/AWB), 40+ directory paths, and 25+ OEM manufacturer regexes.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextMuted
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

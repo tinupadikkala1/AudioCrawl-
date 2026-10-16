@@ -77,10 +77,25 @@ class MediaStoreScanner @Inject constructor(
                 val title = cursor.getString(titleCol) ?: fileName
                 val artist = cursor.getString(artistCol).takeIf { it != "<unknown>" }
                 val album = cursor.getString(albumCol).takeIf { it != "<unknown>" }
-                val durationMs = cursor.getLong(durationCol)
+                var durationMs = cursor.getLong(durationCol)
                 val sizeBytes = cursor.getLong(sizeCol)
                 val mimeType = cursor.getString(mimeCol) ?: "audio/*"
                 val filePath = cursor.getString(dataCol) ?: ""
+
+                // Fallback: If duration is missing from MediaStore but file exists and is readable, try to retrieve it
+                if (durationMs <= 0 && filePath.isNotEmpty()) {
+                    try {
+                        val file = File(filePath)
+                        if (file.exists() && file.canRead()) {
+                            val retriever = android.media.MediaMetadataRetriever()
+                            retriever.setDataSource(filePath)
+                            durationMs = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                            retriever.release()
+                        }
+                    } catch (e: Exception) {
+                        // Ignore fallback failure
+                    }
+                }
 
                 val parentFolder = if (filePath.isNotEmpty()) {
                     File(filePath).parent ?: ""
@@ -97,7 +112,16 @@ class MediaStoreScanner @Inject constructor(
                 }
 
                 // Apply deep in-memory filter
-                val isIncluded = filterEngine.evaluateFile(filePath, fileName, durationMs, config)
+                val isIncluded = filterEngine.evaluateFile(
+                    filePath = filePath,
+                    fileName = fileName,
+                    durationMs = durationMs,
+                    config = config,
+                    sizeBytes = sizeBytes,
+                    title = title,
+                    artist = artist,
+                    album = album
+                )
                 if (isIncluded) {
                     val audioFile = AudioFile(
                         id = id,
